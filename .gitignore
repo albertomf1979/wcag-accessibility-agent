@@ -1,0 +1,37 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Outputs (generated reports — not versioned)
+outputs/*
+!outputs/.gitkeep
+*.pdf
+*.docx
+
+# Claude Code internals
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Cloudflare
+.wrangler/
+worker/node_modules/
+pages/node_modules/
