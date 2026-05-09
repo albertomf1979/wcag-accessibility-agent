@@ -35,8 +35,10 @@ wcag_accessibility/
 
 ## Tech stack
 - Python 3.11+
+- Node.js 18+ (required for axe-cli / Chromium headless scan)
 - anthropic SDK (tool use, streaming)
-- httpx (URL fetching)
+- axe-cli / axe-core (full DOM WCAG scan via headless Chromium)
+- httpx (URL fetching for HTML context)
 - BeautifulSoup4 (HTML parsing)
 - PyMuPDF (PDF export)
 - python-docx (DOCX export)
@@ -63,7 +65,8 @@ python agent.py --url https://example.com --fix /path/to/project # URL + apply f
 ```
 
 ## Agent tools
-- **fetch_url**: Fetch and parse HTML from a URL for accessibility analysis
+- **axe_scan**: Run axe-core via headless Chromium — full rendered DOM scan, always called FIRST for URLs
+- **fetch_url**: Fetch and parse HTML from a URL — used AFTER axe_scan for qualitative context
 - **read_file**: Read local files (HTML, CSS, JS, JSX, TSX, Vue, Svelte, images, PDF)
 - **list_directory**: Explore project structure to understand tech stack before correcting
 - **write_file**: Write corrected files to disk (always creates .bak backup first)

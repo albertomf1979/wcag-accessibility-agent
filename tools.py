@@ -6,8 +6,12 @@ Uses Anthropic tool use format.
 
 import json
 import base64
+import os
+import shlex
+import shutil
+import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 from bs4 import BeautifulSoup
@@ -17,6 +21,36 @@ from bs4 import BeautifulSoup
 # ──────────────────────────────────────────────
 
 TOOL_DEFINITIONS = [
+    {
+        "name": "axe_scan",
+        "description": (
+            "Run a full axe-core WCAG accessibility scan on a URL using a headless Chromium browser. "
+            "Unlike fetch_url (static HTML only), axe_scan executes JavaScript and CSS, evaluating "
+            "the rendered DOM — this detects dynamic ARIA states, CSS-hidden elements, and "
+            "JS-driven content that fetch_url cannot see. Returns ALL mechanical WCAG violations "
+            "in a single pass, with zero false negatives on detectable issues. "
+            "ALWAYS use this as the FIRST tool when analyzing a URL. "
+            "Then use fetch_url to get HTML context for interpreting and explaining the violations."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "URL to scan. Must be publicly accessible."
+                },
+                "tags": {
+                    "type": "string",
+                    "description": (
+                        "Comma-separated WCAG tag filters. "
+                        "Default: 'wcag2a,wcag2aa'. "
+                        "Use 'wcag2a,wcag2aa,wcag2aaa' to include AAA criteria."
+                    )
+                }
+            },
+            "required": ["url"]
+        }
+    },
     {
         "name": "fetch_url",
         "description": (
@@ -134,6 +168,143 @@ TOOL_DEFINITIONS = [
 # ──────────────────────────────────────────────
 # Tool implementations
 # ──────────────────────────────────────────────
+
+def _find_npx() -> Optional[str]:
+    """Locate npx binary across common macOS/Linux install paths."""
+    found = shutil.which("npx")
+    if found:
+        return found
+    candidates = [
+        "/usr/local/bin/npx",
+        "/opt/homebrew/bin/npx",
+    ]
+    for c in candidates:
+        if Path(c).exists():
+            return c
+    # nvm: find highest installed version
+    nvm_node = Path.home() / ".nvm" / "versions" / "node"
+    if nvm_node.exists():
+        for version_dir in sorted(nvm_node.iterdir(), reverse=True):
+            npx_path = version_dir / "bin" / "npx"
+            if npx_path.exists():
+                return str(npx_path)
+    return None
+
+
+def axe_scan(url: str, tags: str = "wcag2a,wcag2aa") -> dict[str, Any]:
+    """
+    Run axe-core on a URL via headless Chromium (axe-cli / npx).
+    Returns the full list of WCAG violations from the rendered DOM.
+    """
+    npx = _find_npx()
+    if not npx:
+        return {
+            "success": False,
+            "error": (
+                "npx not found. Install Node.js 18+ and run "
+                "`npx -y axe-cli --version` once to pre-install axe-cli. "
+                "See SETUP.md for instructions."
+            ),
+            "fallback": "Use fetch_url as a partial fallback (static HTML only)."
+        }
+
+    try:
+        result = subprocess.run(
+            [npx, "-y", "@axe-core/cli", url,
+             "--tags", tags,
+             "--stdout",
+             "--timeout", "90",
+             "--chrome-options=--no-sandbox,--disable-dev-shm-usage"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env={**os.environ, "FORCE_COLOR": "0", "NO_COLOR": "1"},
+        )
+
+        stdout = result.stdout.strip()
+
+        # axe-cli may emit non-JSON preamble; find the first [ or {
+        json_start = next(
+            (i for i, c in enumerate(stdout) if c in ("[", "{")), None
+        )
+        if json_start is None:
+            return {
+                "success": False,
+                "error": "axe-cli produced no JSON output.",
+                "stderr": result.stderr[:500],
+                "stdout": stdout[:300],
+            }
+
+        raw = json.loads(stdout[json_start:])
+        # axe-cli --reporter json returns an array of result objects
+        data = raw[0] if isinstance(raw, list) else raw
+
+        violations = data.get("violations", [])
+        passes = data.get("passes", [])
+        incomplete = data.get("incomplete", [])
+
+        impact_counts: dict[str, int] = {}
+        for v in violations:
+            impact = v.get("impact", "unknown")
+            impact_counts[impact] = impact_counts.get(impact, 0) + 1
+
+        simplified = []
+        for v in violations:
+            simplified.append({
+                "id": v.get("id"),
+                "impact": v.get("impact"),
+                "description": v.get("description"),
+                "help": v.get("help"),
+                "helpUrl": v.get("helpUrl"),
+                "wcag_tags": [t for t in v.get("tags", []) if t.startswith("wcag")],
+                "nodes_count": len(v.get("nodes", [])),
+                "nodes_sample": [
+                    {
+                        "html": n.get("html", "")[:250],
+                        "target": n.get("target", []),
+                        "failureSummary": n.get("failureSummary", "")[:400],
+                    }
+                    for n in v.get("nodes", [])[:3]
+                ],
+            })
+
+        return {
+            "success": True,
+            "url": url,
+            "tags_checked": tags,
+            "engine": data.get("testEngine", {}).get("name", "axe-core"),
+            "engine_version": data.get("testEngine", {}).get("version", ""),
+            "violations_total": len(violations),
+            "violations_by_impact": impact_counts,
+            "passes_count": len(passes),
+            "incomplete_count": len(incomplete),
+            "violations": simplified,
+            "incomplete_sample": [
+                {
+                    "id": i.get("id"),
+                    "description": i.get("description"),
+                    "impact": i.get("impact"),
+                }
+                for i in incomplete[:10]
+            ],
+            "note": (
+                "Results from axe-core via headless Chromium (JS+CSS executed). "
+                "These are mechanical violations — exhaustive and reliable. "
+                "Combine with fetch_url for HTML context and qualitative reasoning."
+            ),
+        }
+
+    except subprocess.TimeoutExpired:
+        return {"success": False, "error": "axe-cli timed out after 120 seconds."}
+    except json.JSONDecodeError as e:
+        return {
+            "success": False,
+            "error": f"Failed to parse axe-cli JSON: {e}",
+            "raw_stdout": stdout[:500] if "stdout" in dir() else "",
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 def fetch_url(url: str) -> dict[str, Any]:
     """Fetch and parse a web page for accessibility analysis."""
@@ -387,7 +558,12 @@ def execute_tool(tool_name: str, tool_input: dict) -> str:
     Execute a tool by name and return JSON string result.
     Called by the agent loop when Claude requests a tool use.
     """
-    if tool_name == "fetch_url":
+    if tool_name == "axe_scan":
+        result = axe_scan(
+            url=tool_input["url"],
+            tags=tool_input.get("tags", "wcag2a,wcag2aa"),
+        )
+    elif tool_name == "fetch_url":
         result = fetch_url(tool_input["url"])
     elif tool_name == "read_file":
         result = read_file(tool_input["path"])

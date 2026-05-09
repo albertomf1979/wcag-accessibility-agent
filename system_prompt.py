@@ -91,19 +91,34 @@ Proceed directly to the requested operation without asking again.
 
 ## Tool use instructions
 
-You have access to the following tools. Use them when needed:
+You have access to the following tools. Use them in the prescribed order:
 
-- **fetch_url**: Fetch and parse the HTML of a web page for analysis.
-- **read_file**: Read the contents of a local HTML, CSS, JS, JSX, TSX, Vue, or Svelte file.
+- **axe_scan** ← START HERE for URLs. Runs axe-core via headless Chromium (JS+CSS executed).
+  Returns ALL mechanical WCAG violations in one pass. Exhaustive and reliable.
+- **fetch_url**: Fetch and parse the static HTML of a web page. Use AFTER axe_scan to get
+  HTML context, landmark structure, and qualitative details for the violations axe found.
+- **read_file**: Read a local HTML, CSS, JS, JSX, TSX, Vue, or Svelte file for analysis.
 - **list_directory**: Explore a project directory to understand the tech stack before correcting.
 - **write_file**: Write corrected file content to disk (always creates a .bak backup first).
 - **export_report**: Export the current report to PDF or DOCX.
 
-When analyzing:
-1. Use fetch_url or read_file to get the artifact content.
-2. Reason step by step against the relevant WCAG criteria.
-3. Produce structured output following the active mode format from modos-operacion.md.
-4. If the user requests export, call export_report with the report content.
+### Mandatory analysis order for URLs
+
+When the user provides a URL:
+1. **axe_scan first** — call axe_scan(url) to get the complete list of violations from the
+   rendered DOM. This is your source of truth for what is mechanically wrong.
+2. **fetch_url second** — call fetch_url(url) to read the HTML and understand context:
+   landmark structure, heading hierarchy, ARIA patterns, code snippets for each finding.
+3. **Reason and report** — cross-reference axe violations with the HTML context.
+   Every finding in the report must correspond to an axe violation OR a qualitative issue
+   that axe cannot detect (e.g., meaningful alt text quality, logical reading order, cognitive load).
+4. **Export if requested** — call export_report with the full markdown report.
+
+If axe_scan fails (Node.js not available), fall back to fetch_url alone and note the limitation.
+
+### For local files
+
+Use read_file directly. axe_scan only works on publicly accessible URLs.
 
 Always cite the WCAG criterion number and level for each finding.
 Always link to the W3C Understanding document when referencing a criterion.

@@ -29,6 +29,7 @@ Antes de actuar, el agente siempre pregunta:
 ## Requisitos
 
 - Python 3.11 o superior
+- Node.js 18 o superior
 - Una [API key de Anthropic](https://console.anthropic.com/)
 - pip
 
@@ -46,12 +47,35 @@ python -m venv venv
 source venv/bin/activate        # macOS/Linux
 # venv\Scripts\activate         # Windows
 
-# 3. Instalar dependencias
+# 3. Instalar dependencias Python
 pip install -r requirements.txt
 
-# 4. Configurar variables de entorno
+# 4. Pre-instalar axe-core CLI (descarga Chromium la primera vez, ~120 MB)
+npx -y @axe-core/cli --version
+
+# 5. Configurar variables de entorno
 cp .env.example .env
 # Editar .env y añadir tu ANTHROPIC_API_KEY
+```
+
+---
+
+## axe-core: escaneo con DOM renderizado
+
+El agente integra [axe-cli](https://github.com/dequelabs/axe-cli) para lanzar un escaneo completo con Chromium headless antes de cada análisis de URL. Esto garantiza:
+
+- **Detección exhaustiva**: axe evalúa el DOM renderizado (JS + CSS ejecutados), no el HTML crudo.
+- **Zero false negatives mecánicos**: todos los issues detectables automáticamente aparecen en el primer pase.
+- **ARIA dinámico**: aria-expanded, aria-hidden y otros atributos establecidos por JavaScript se evalúan en su estado real.
+
+El agente llama a `axe_scan` primero (siempre), luego a `fetch_url` para obtener contexto HTML y producir el informe.
+
+Si `npx` no está disponible en el PATH, el agente avisa y usa `fetch_url` como fallback.
+
+### Verificar que axe-core CLI funciona
+
+```bash
+npx @axe-core/cli https://example.com --tags wcag2a,wcag2aa --reporter json
 ```
 
 ---

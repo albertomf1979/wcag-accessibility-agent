@@ -24,7 +24,7 @@ load_dotenv(Path(__file__).parent / ".env", override=True)
 app = typer.Typer()
 console = Console()
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-MODEL = os.getenv("WCAG_MODEL", "claude-sonnet-4-5")
+MODEL = os.getenv("WCAG_MODEL", "claude-sonnet-4-6")
 MAX_TOKENS = 8096
 
 

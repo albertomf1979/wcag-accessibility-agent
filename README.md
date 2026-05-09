@@ -63,8 +63,11 @@ Para uso avanzado: análisis automatizado de URLs, procesamiento de archivos, ex
 ### Requisitos
 
 - Python 3.11 o superior
+- Node.js 18 o superior (`node --version` para comprobar)
 - Una [API key de Anthropic](https://console.anthropic.com/)
 - pip
+
+> **¿Por qué Node.js?** El agente usa [axe-core](https://github.com/dequelabs/axe-core) vía `axe-cli` para lanzar un escaneo completo con Chromium antes de cada análisis. Esto permite detectar todas las violaciones WCAG en el DOM renderizado (con JS y CSS ejecutados), no solo en el HTML estático.
 
 ### Instalación
 
@@ -81,7 +84,10 @@ source venv/bin/activate        # macOS / Linux
 # 3. Instalar dependencias Python
 pip install -r requirements.txt
 
-# 4. Configurar credenciales
+# 4. Pre-instalar axe-core CLI (descarga Chromium la primera vez, ~120 MB)
+npx -y @axe-core/cli --version
+
+# 5. Configurar credenciales
 cp .env.example .env
 # Edita .env y añade tu ANTHROPIC_API_KEY
 ```
