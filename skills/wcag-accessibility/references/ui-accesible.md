@@ -102,7 +102,7 @@ Excepciones: contenido que requiere dos dimensiones por naturaleza (mapas, tabla
 ## Componentes UI — especificaciones de accesibilidad
 
 ### Botones
-- Área táctil mínima: 24×24 CSS px (AA, 2.5.8). Recomendado: 44×44px.
+- Área táctil: 44×44 CSS px para AAA en WCAG 2.1 (2.5.5). WCAG 2.2 añade un mínimo de 24×24 CSS px en AA (2.5.8 [WCAG 2.2]); no es exigible en una auditoría WCAG 2.1, pero es una buena práctica.
 - Texto del botón descriptivo de la acción.
 - Estado deshabilitado: `disabled` en HTML (no solo estilos CSS).
 - Estado hover y focus con contraste suficiente.
@@ -119,10 +119,10 @@ Excepciones: contenido que requiere dos dimensiones por naturaleza (mapas, tabla
 - Iconos funcionales (botones solo-icono): `aria-label` en el botón padre o texto visualmente oculto con `.sr-only`.
 - Contraste del icono respecto al fondo: 3:1 mínimo (criterio 1.4.11 AA).
 
-### Focus visible (2.4.7 AA + 2.4.13 AAA)
+### Focus visible (2.4.7 AA; 2.4.13 AAA [WCAG 2.2])
 El indicador de foco debe ser:
 - Visible (AA): existe un cambio visual al recibir foco.
-- Para AAA: el área de foco ≥ perímetro del componente × 2px CSS, con ratio de contraste ≥ 3:1 entre el estado enfocado y desenfocado.
+- Para AAA en WCAG 2.2 (2.4.13 Focus Appearance, no existe en WCAG 2.1): el área de foco ≥ perímetro del componente × 2px CSS, con ratio de contraste ≥ 3:1 entre el estado enfocado y desenfocado.
 
 **Implementación recomendada**:
 ```css

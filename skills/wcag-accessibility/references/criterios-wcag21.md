@@ -3,8 +3,9 @@
 Fuente oficial: https://www.w3.org/TR/WCAG21/
 Quick Reference: https://www.w3.org/WAI/WCAG21/quickref/
 
-Total: 78 criterios de éxito (25 A + 13 AA adicionales + 28 AAA + 12 nuevos en 2.1)
-Los criterios marcados con [2.1] son nuevos en WCAG 2.1 (no existían en 2.0).
+Total WCAG 2.1: 78 criterios de éxito — 30 de nivel A, 20 de nivel AA y 28 de nivel AAA.
+Los criterios marcados con [2.1] son nuevos en WCAG 2.1 (17 en total; no existían en 2.0).
+Los 9 criterios añadidos en WCAG 2.2 se listan aparte, al final, y **no** forman parte de una auditoría WCAG 2.1.
 
 ---
 
@@ -97,9 +98,6 @@ Los criterios marcados con [2.1] son nuevos en WCAG 2.1 (no existían en 2.0).
 | 2.4.8 Location | AAA | El usuario sabe dónde se encuentra dentro del sitio |
 | 2.4.9 Link Purpose (Link Only) | AAA | El propósito del enlace es determinable sin contexto |
 | 2.4.10 Section Headings | AAA | Los encabezados organizan el contenido |
-| 2.4.11 Focus Not Obscured (Minimum) [2.2] | AA | El componente con foco no queda completamente oculto |
-| 2.4.12 Focus Not Obscured (Enhanced) [2.2] | AAA | El componente con foco está completamente visible |
-| 2.4.13 Focus Appearance [2.2] | AAA | El indicador de foco cumple requisitos de área y contraste |
 
 ### Guía 2.5 — Input Modalities
 | Criterio | Nivel | Descripción breve |
@@ -108,10 +106,8 @@ Los criterios marcados con [2.1] son nuevos en WCAG 2.1 (no existían en 2.0).
 | 2.5.2 Pointer Cancellation [2.1] | A | La activación en down-event puede cancelarse o revertirse |
 | 2.5.3 Label in Name [2.1] | A | El nombre accesible contiene el texto visible |
 | 2.5.4 Motion Actuation [2.1] | A | Las funciones activadas por movimiento tienen alternativa de interfaz |
-| 2.5.5 Target Size (Enhanced) [2.1] | AAA | Área táctil mínima 44×44 CSS px |
+| 2.5.5 Target Size [2.1] | AAA | Área táctil mínima 44×44 CSS px |
 | 2.5.6 Concurrent Input Mechanisms [2.1] | AAA | No se restringe el uso de mecanismos de entrada |
-| 2.5.7 Dragging Movements [2.2] | AA | Las operaciones de arrastre tienen alternativa de un solo punto |
-| 2.5.8 Target Size (Minimum) [2.2] | AA | Área táctil mínima 24×24 CSS px |
 
 ---
 
@@ -135,7 +131,6 @@ Los criterios marcados con [2.1] son nuevos en WCAG 2.1 (no existían en 2.0).
 | 3.2.3 Consistent Navigation | AA | La navegación es consistente en todo el sitio |
 | 3.2.4 Consistent Identification | AA | Los componentes con la misma función se identifican consistentemente |
 | 3.2.5 Change on Request | AAA | Los cambios de contexto solo se producen a petición del usuario |
-| 3.2.6 Consistent Help [2.2] | A | Los mecanismos de ayuda aparecen en el mismo lugar relativo |
 
 ### Guía 3.3 — Input Assistance
 | Criterio | Nivel | Descripción breve |
@@ -146,9 +141,6 @@ Los criterios marcados con [2.1] son nuevos en WCAG 2.1 (no existían en 2.0).
 | 3.3.4 Error Prevention (Legal, Financial, Data) | AA | En datos críticos: reversible, verificable o confirmable |
 | 3.3.5 Help | AAA | Se proporciona ayuda contextual |
 | 3.3.6 Error Prevention (All) | AAA | Todas las entradas son reversibles, verificables o confirmables |
-| 3.3.7 Redundant Entry [2.2] | A | No se pide información ya proporcionada en el mismo proceso |
-| 3.3.8 Accessible Authentication (Minimum) [2.2] | AA | La autenticación no requiere prueba cognitiva sin alternativa |
-| 3.3.9 Accessible Authentication (Enhanced) [2.2] | AAA | La autenticación no requiere prueba cognitiva |
 
 ---
 
@@ -157,16 +149,36 @@ Los criterios marcados con [2.1] son nuevos en WCAG 2.1 (no existían en 2.0).
 ### Guía 4.1 — Compatible
 | Criterio | Nivel | Descripción breve |
 |---|---|---|
-| 4.1.1 Parsing | A | Obsoleto en WCAG 2.2 (marcado como tal en WCAG 2.1) |
+| 4.1.1 Parsing | A | Marcado sin código válido/bien formado. Una errata de WCAG 2.1 indica que para HTML/XML se considera siempre satisfecho; eliminado (obsoleto) en WCAG 2.2 |
 | 4.1.2 Name, Role, Value | A | Los componentes UI tienen nombre, rol y valor determinables programáticamente |
 | 4.1.3 Status Messages [2.1] | AA | Los mensajes de estado son determinables programáticamente sin recibir foco |
+
+---
+
+## Criterios añadidos en WCAG 2.2 (fuera del alcance WCAG 2.1)
+
+Fuente oficial: https://www.w3.org/TR/WCAG22/ — evaluar solo si se pide WCAG 2.2 expresamente.
+
+| Criterio | Nivel | Descripción breve |
+|---|---|---|
+| 2.4.11 Focus Not Obscured (Minimum) [2.2] | AA | El componente con foco no queda completamente oculto |
+| 2.4.12 Focus Not Obscured (Enhanced) [2.2] | AAA | El componente con foco está completamente visible |
+| 2.4.13 Focus Appearance [2.2] | AAA | El indicador de foco cumple requisitos de área y contraste |
+| 2.5.7 Dragging Movements [2.2] | AA | Las operaciones de arrastre tienen alternativa de un solo punto |
+| 2.5.8 Target Size (Minimum) [2.2] | AA | Área táctil mínima 24×24 CSS px |
+| 3.2.6 Consistent Help [2.2] | A | Los mecanismos de ayuda aparecen en el mismo lugar relativo |
+| 3.3.7 Redundant Entry [2.2] | A | No se pide información ya proporcionada en el mismo proceso |
+| 3.3.8 Accessible Authentication (Minimum) [2.2] | AA | La autenticación no requiere prueba cognitiva sin alternativa |
+| 3.3.9 Accessible Authentication (Enhanced) [2.2] | AAA | La autenticación no requiere prueba cognitiva |
+
+En WCAG 2.2, 2.5.5 pasa a llamarse "Target Size (Enhanced)" y 4.1.1 Parsing queda obsoleto: WCAG 2.2 tiene 86 criterios.
 
 ---
 
 ## Notas sobre versiones
 
 - Los criterios marcados **[2.1]** son nuevos en WCAG 2.1 (añadidos a los 61 de WCAG 2.0).
-- Los criterios marcados **[2.2]** son nuevos en WCAG 2.2 y no forman parte de WCAG 2.1.
-- **4.1.1 Parsing** está obsoleto en WCAG 2.2 y añadida una nota aclaratoria en WCAG 2.1.
+- Los criterios marcados **[2.2]** son nuevos en WCAG 2.2, no forman parte de WCAG 2.1 y se listan en su propia sección.
+- **4.1.1 Parsing** está obsoleto en WCAG 2.2; WCAG 2.1 lo mantiene con una nota de errata.
 - WCAG 2.2 es backwards-compatible: cumplir 2.2 implica cumplir 2.1 y 2.0.
 - La referencia legal en España y Europa (EN 301 549) actualmente usa **WCAG 2.1 AA**.
