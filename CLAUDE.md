@@ -14,7 +14,7 @@ wcag-accessibility-agent/
 ├── README.md                    ← user-facing instructions (GitHub front page)
 ├── SETUP.md                     ← detailed developer/technical reference
 ├── .claude-plugin/
-│   ├── plugin.json              ← Claude Code plugin "wcag"
+│   ├── plugin.json              ← plugin "wcag" (Claude Code, Codex, Copilot CLI, Antigravity)
 │   └── marketplace.json         ← marketplace "wcag-accessibility" (source: ./)
 ├── skills/wcag-accessibility/   ← portable Agent Skill (single source of truth)
 │   ├── SKILL.md                 ← skill core (agent system prompt source)

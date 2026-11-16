@@ -15,7 +15,7 @@
 - [Qué es este repositorio](#qué-es-este-repositorio)
 - [Instalación de la skill](#instalación-de-la-skill)
   - [1. GitHub CLI (`gh skill`)](#1-github-cli-gh-skill)
-  - [2. Plugin de Claude Code](#2-plugin-de-claude-code)
+  - [2. Plugin (Claude Code, Codex, Copilot CLI, Antigravity)](#2-plugin-claude-code-codex-copilot-cli-antigravity)
   - [3. Instalación manual como Agent Skill](#3-instalación-manual-como-agent-skill)
   - [4. Claude.ai (paquete `.skill`)](#4-claudeai-paquete-skill)
 - [Ejemplos de uso de la skill](#ejemplos-de-uso-de-la-skill)
@@ -33,14 +33,14 @@
 Este repositorio contiene dos artefactos independientes que puedes usar por separado o juntos:
 
 **1. La Skill** (`skills/wcag-accessibility/`: `SKILL.md` + `references/` + `scripts/`)  
-Base de conocimiento WCAG 2.1 estructurada para agentes de IA, siguiendo la especificación [Agent Skills](https://agentskills.io/specification). Cubre los 78 criterios de éxito de WCAG 2.1 (y lista aparte los 9 añadidos en WCAG 2.2), técnicas de fallo, patrones UX/UI/desarrollo y marcos legales. Incluye `scripts/axe-scan.mjs`, un escaneo determinista con axe-core que aporta evidencias. Se instala en Claude Code, Codex, GitHub Copilot y otros agentes con `gh skill`, como plugin de Claude Code o en Claude.ai. **No requiere Python ni API key**: el agente anfitrión lee la skill, ejecuta las herramientas disponibles y propone los cambios.
+Base de conocimiento WCAG 2.1 estructurada para agentes de IA, siguiendo la especificación [Agent Skills](https://agentskills.io/specification). Cubre los 78 criterios de éxito de WCAG 2.1 (y lista aparte los 9 añadidos en WCAG 2.2), técnicas de fallo, patrones UX/UI/desarrollo y marcos legales. Incluye `scripts/axe-scan.mjs`, un escaneo determinista con axe-core que aporta evidencias. Se instala en Claude Code, Codex, GitHub Copilot, Antigravity y otros agentes con `gh skill` o `npx skills`, como plugin (Claude Code, Codex, Copilot CLI, Antigravity) o en Claude.ai. **No requiere Python ni API key**: el agente anfitrión lee la skill, ejecuta las herramientas disponibles y propone los cambios.
 
 **2. El Agente CLI** (`agent.py` y el resto del código Python)  
 Implementación completa e independiente del agente con bucle de tool use sobre la API de Anthropic, análisis de URLs y archivos, exportación de informes PDF/DOCX y corrección activa de código fuente. Usa la misma skill como system prompt y el mismo script de axe-core.
 
 | | Skill portable | Agente CLI Python |
 |---|---|---|
-| Dónde se ejecuta | Dentro de tu agente (Claude Code, Codex, Copilot, Claude.ai...) | En tu terminal, como programa propio |
+| Dónde se ejecuta | Dentro de tu agente (Claude Code, Codex, Copilot, Antigravity, Claude.ai...) | En tu terminal, como programa propio |
 | Requisitos | Ninguno. Opcional: Node.js 18+ y Chrome para axe-core | Python 3.11+, dependencias de `requirements.txt`, `ANTHROPIC_API_KEY`; Node.js 18+ para axe-core |
 | Modelo de IA | El de tu agente | Claude vía API de Anthropic (`WCAG_MODEL`) |
 | Configuración inicial | Valores por defecto: Desarrollo · WCAG 2.1 AA · análisis sin modificar archivos | Protocolo interactivo (disciplina + nivel) o flags |
@@ -69,13 +69,28 @@ gh skill install albertomf1979/wcag-accessibility-agent wcag-accessibility --age
 
 > `gh skill install` usa la última release publicada del repositorio si existe. Para instalar una rama o un commit concretos, añade `--pin <rama|sha>`.
 
-### 2. Plugin de Claude Code
+**Alternativa con `npx skills`** ([Vercel Agent Skills](https://github.com/vercel-labs/skills), requiere Node.js):
 
-Dentro de Claude Code:
+```bash
+npx skills add albertomf1979/wcag-accessibility-agent
+```
+
+### 2. Plugin (Claude Code, Codex, Copilot CLI, Antigravity)
+
+El repositorio es también un marketplace de plugins (`.claude-plugin/marketplace.json`) con el plugin `wcag`, que reutiliza la misma carpeta `skills/`.
+
+**Claude Code** — dentro de Claude Code:
 
 ```
 /plugin marketplace add albertomf1979/wcag-accessibility-agent
 /plugin install wcag@wcag-accessibility
+```
+
+O desde la terminal:
+
+```bash
+claude plugin marketplace add albertomf1979/wcag-accessibility-agent
+claude plugin install wcag@wcag-accessibility
 ```
 
 En Claude Code 2.1.275 o superior también puedes hacerlo en un paso: `/plugin install wcag --marketplace albertomf1979/wcag-accessibility-agent`.
@@ -84,6 +99,28 @@ La skill se activa automáticamente al hablar de accesibilidad, o de forma expl�
 
 ```
 /wcag:wcag-accessibility audita src/components/Modal.tsx
+```
+
+**Codex CLI**:
+
+```bash
+codex plugin marketplace add albertomf1979/wcag-accessibility-agent
+codex plugin add wcag@wcag-accessibility
+```
+
+**GitHub Copilot CLI** — dentro de Copilot CLI:
+
+```
+/plugin marketplace add albertomf1979/wcag-accessibility-agent
+/plugin install wcag@wcag-accessibility
+```
+
+O desde la terminal: `copilot plugin marketplace add albertomf1979/wcag-accessibility-agent` y `copilot plugin install wcag@wcag-accessibility`.
+
+**Antigravity CLI**:
+
+```bash
+agy plugin install https://github.com/albertomf1979/wcag-accessibility-agent
 ```
 
 ### 3. Instalación manual como Agent Skill
@@ -372,9 +409,9 @@ print(response.content[0].text)
 
 El archivo `skills/wcag-accessibility/SKILL.md` contiene la configuración por defecto, los modos de operación y las referencias a cargar. Puedes pegarlo directamente como system prompt en cualquier interfaz o API compatible con Claude.
 
-### Con Claude Code, Codex o Copilot
+### Con Claude Code, Codex, Copilot o Antigravity
 
-Instala la skill con `gh skill` o el plugin de Claude Code (ver [Instalación de la skill](#instalación-de-la-skill)). No hace falta el agente CLI.
+Instala la skill con `gh skill`, `npx skills` o como plugin (ver [Instalación de la skill](#instalación-de-la-skill)). No hace falta el agente CLI.
 
 ---
 

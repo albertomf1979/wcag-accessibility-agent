@@ -37,7 +37,7 @@ La skill portable (`skills/wcag-accessibility/`), en cambio, aplica valores por 
 | Agente anfitrión | Claude Code, Codex, Copilot, Claude.ai... | Lee la skill, ejecuta herramientas, analiza y propone cambios |
 | CLI Python independiente | `agent.py`, `system_prompt.py`, `tools.py`, `exporters/` | Usa la API de Anthropic; carga la misma skill como system prompt y el mismo script de axe-core |
 
-Las instrucciones de instalación de la skill (`gh skill`, plugin de Claude Code, instalación manual y Claude.ai) están en el [README](README.md#instalación-de-la-skill).
+Las instrucciones de instalación de la skill (`gh skill`, `npx skills`, plugin para Claude Code, Codex, Copilot CLI y Antigravity, instalación manual y Claude.ai) están en el [README](README.md#instalación-de-la-skill).
 
 ---
 
@@ -194,7 +194,7 @@ Tu elección: AA
 ```
 wcag-accessibility-agent/
 ├── .claude-plugin/
-│   ├── plugin.json             # Manifiesto del plugin de Claude Code (wcag)
+│   ├── plugin.json             # Manifiesto del plugin wcag (Claude Code, Codex, Copilot CLI, Antigravity)
 │   └── marketplace.json        # Marketplace (wcag-accessibility) que apunta a este repositorio
 ├── skills/
 │   └── wcag-accessibility/     # Agent Skill portable (gh skill, plugin, Claude.ai)
