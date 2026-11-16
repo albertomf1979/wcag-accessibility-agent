@@ -21,7 +21,7 @@
    - 🔴 **Crítico** — bloquea el uso para usuarios con discapacidad (ej: formulario sin labels, sin navegación por teclado, sin alt text en imagen funcional).
    - 🟠 **Mayor** — degradación significativa de la experiencia (ej: contraste insuficiente, foco no visible, error sin descripción textual).
    - 🟡 **Menor** — mejoras que elevan la calidad sin bloquear el acceso.
-4. Mapear cada hallazgo al criterio WCAG 2.1 correspondiente.
+4. Mapear cada hallazgo al criterio WCAG 2.1 correspondiente e indicar su categoría de evidencia (herramienta ejecutada, inspección de código o comprobación manual necesaria). Ver "Auditoría basada en evidencias" en `SKILL.md`.
 5. Indicar el impacto por perfil de usuario afectado.
 
 **Output**:
@@ -60,7 +60,7 @@ Fuente: https://www.w3.org/WAI/test-evaluate/conformance/wcag-em/
 1. **Definir el alcance** — ¿Qué páginas, flujos o componentes se auditan?
 2. **Explorar el sitio/producto** — identificar tipos de páginas y componentes únicos.
 3. **Seleccionar muestra representativa** — incluir páginas clave del flujo del usuario.
-4. **Evaluar cada criterio WCAG aplicable** — estado: ✅ Pasa / ❌ Falla / ⚠️ Revisar manualmente / N/A.
+4. **Evaluar cada criterio WCAG aplicable** — estado: ✅ Pasa / ❌ Falla (indicar si la evidencia es de herramienta o de inspección de código) / ⚠️ Revisar manualmente / ⏸️ No evaluado / N/A. Un criterio solo "pasa" si se ha verificado; la ausencia de errores en axe-core no basta.
 5. **Documentar hallazgos** con la plantilla de hallazgo individual.
 6. **Producir informe consolidado**.
 
@@ -69,12 +69,14 @@ Fuente: https://www.w3.org/WAI/test-evaluate/conformance/wcag-em/
 ### [HAL-001] Criterio 1.4.3 — Contraste (Mínimo) · Nivel AA
 
 **Estado**: ❌ Falla
+**Evidencia**: Inspección de código — `src/components/Search.css:12` (`color: #9E9E9E`) sobre fondo `#FFFFFF`
 **Elemento afectado**: Texto de placeholder en campos de búsqueda (`input[type="search"]`)
 **Problema**: El color del placeholder (#9E9E9E sobre #FFFFFF) tiene un ratio de contraste de 2.85:1, por debajo del mínimo requerido de 4.5:1 para texto normal.
 **Técnica de fallo**: F83 — Failure of Success Criterion 1.4.3 and 1.4.6 due to using background images that do not provide sufficient contrast with foreground text or images of text (adaptación).
 **Impacto**: Usuarios con baja visión, usuarios en condiciones de iluminación adversa, usuarios en pantallas de baja calidad.
 **Prioridad**: Alta
 **Corrección sugerida**: Cambiar el color del placeholder a #767676 o más oscuro sobre fondo blanco (ratio 4.54:1). O usar un label visible en lugar de depender del placeholder.
+**Verificación**: Medir el contraste con WebAIM Contrast Checker o axe-core (`color-contrast`) y comprobar ratio ≥ 4.5:1.
 **Referencia WCAG**: https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum
 ```
 
@@ -101,8 +103,8 @@ Fuente: https://www.w3.org/WAI/test-evaluate/conformance/wcag-em/
 ### Score de conformidad
 | Nivel | Criterios evaluados | Pasan | Fallan | Manual | Score |
 |---|---|---|---|---|---|
-| A (25 criterios) | 25 | 19 | 4 | 2 | 76% |
-| AA (adicionales, 13) | 13 | 8 | 3 | 2 | 62% |
+| A (30 criterios) | 30 | 23 | 5 | 2 | 77% |
+| AA (adicionales, 20) | 20 | 12 | 5 | 3 | 60% |
 | AAA (adicionales, 28) | 28 | 5 | 12 | 11 | 18% |
 
 ### Madurez de accesibilidad

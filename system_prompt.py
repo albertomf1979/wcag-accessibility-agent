@@ -1,12 +1,13 @@
 """
 system_prompt.py
-Builds the agent system prompt from SKILL.md and references/.
+Builds the agent system prompt from skills/wcag-accessibility/ (SKILL.md + references/).
 The skill is the source of truth — this file just assembles it.
 """
 
 from pathlib import Path
 
-SKILL_DIR = Path(__file__).parent
+# Resolved from this file, so the prompt builds from any working directory.
+SKILL_DIR = Path(__file__).resolve().parent / "skills" / "wcag-accessibility"
 REFERENCES_DIR = SKILL_DIR / "references"
 
 DISCIPLINE_MAP = {
@@ -19,7 +20,8 @@ DISCIPLINE_MAP = {
 
 
 def _read(path: Path) -> str:
-    return path.read_text(encoding="utf-8") if path.exists() else ""
+    # Fail loudly: a missing reference would silently degrade the prompt.
+    return path.read_text(encoding="utf-8")
 
 
 def build_system_prompt(discipline: str = "todos", wcag_level: str = "AA") -> str:
@@ -94,7 +96,8 @@ Proceed directly to the requested operation without asking again.
 You have access to the following tools. Use them in the prescribed order:
 
 - **axe_scan** ← START HERE for URLs. Runs axe-core via headless Chromium (JS+CSS executed).
-  Returns ALL mechanical WCAG violations in one pass. Exhaustive and reliable.
+  Returns the violations axe-core detects automatically. It does not cover every criterion:
+  zero violations never means the page conforms.
 - **fetch_url**: Fetch and parse the static HTML of a web page. Use AFTER axe_scan to get
   HTML context, landmark structure, and qualitative details for the violations axe found.
 - **read_file**: Read a local HTML, CSS, JS, JSX, TSX, Vue, or Svelte file for analysis.
