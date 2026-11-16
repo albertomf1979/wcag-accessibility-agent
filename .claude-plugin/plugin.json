@@ -1,0 +1,13 @@
+{
+  "name": "wcag",
+  "version": "1.1.0",
+  "description": "WCAG 2.1 accessibility skill grounded in W3C WAI: audit, analyze and fix web products (A/AA/AAA) for UX, UI and development.",
+  "author": {
+    "name": "albertomf1979",
+    "url": "https://github.com/albertomf1979"
+  },
+  "homepage": "https://github.com/albertomf1979/wcag-accessibility-agent",
+  "repository": "https://github.com/albertomf1979/wcag-accessibility-agent",
+  "license": "MIT",
+  "keywords": ["accessibility", "a11y", "wcag", "aria", "audit"]
+}

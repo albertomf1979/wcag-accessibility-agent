@@ -1,0 +1,14 @@
+{
+  "name": "wcag-accessibility",
+  "description": "WCAG 2.1 accessibility skill for Claude Code, grounded in W3C WAI.",
+  "owner": {
+    "name": "albertomf1979"
+  },
+  "plugins": [
+    {
+      "name": "wcag",
+      "source": "./",
+      "description": "WCAG 2.1 accessibility skill grounded in W3C WAI: audit, analyze and fix web products (A/AA/AAA) for UX, UI and development."
+    }
+  ]
+}
