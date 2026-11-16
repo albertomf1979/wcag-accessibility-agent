@@ -20,9 +20,24 @@ El agente opera en cinco modos:
 | **Corrección** | Código corregido con explicación del criterio satisfecho |
 | **Handoff** | Documento entregable estructurado por roles para equipos |
 
-Antes de actuar, el agente siempre pregunta:
+En modo interactivo, el agente CLI pregunta antes de actuar:
 1. Nivel disciplinar: **UX / UI / Desarrollo** (o combinación)
 2. Nivel de conformidad objetivo: **A / AA / AAA**
+
+La skill portable (`skills/wcag-accessibility/`), en cambio, aplica valores por defecto (Desarrollo · WCAG 2.1 AA · análisis sin modificar archivos) y solo pregunta cuando falta información relevante.
+
+---
+
+## Arquitectura
+
+| Capa | Dónde | Función |
+|---|---|---|
+| Skill y referencias | `skills/wcag-accessibility/SKILL.md`, `references/` | Instrucciones y conocimiento WCAG (fuente de verdad) |
+| Herramientas deterministas | `skills/wcag-accessibility/scripts/axe-scan.mjs` | Evidencias automáticas (axe-core), sin modelo de IA |
+| Agente anfitrión | Claude Code, Codex, Copilot, Claude.ai... | Lee la skill, ejecuta herramientas, analiza y propone cambios |
+| CLI Python independiente | `agent.py`, `system_prompt.py`, `tools.py`, `exporters/` | Usa la API de Anthropic; carga la misma skill como system prompt y el mismo script de axe-core |
+
+Las instrucciones de instalación de la skill (`gh skill`, plugin de Claude Code, instalación manual y Claude.ai) están en el [README](README.md#instalación-de-la-skill).
 
 ---
 
@@ -39,7 +54,7 @@ Antes de actuar, el agente siempre pregunta:
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/TU_USUARIO/wcag-accessibility-agent.git
+git clone https://github.com/albertomf1979/wcag-accessibility-agent.git
 cd wcag-accessibility-agent
 
 # 2. Crear entorno virtual
@@ -62,20 +77,29 @@ cp .env.example .env
 
 ## axe-core: escaneo con DOM renderizado
 
-El agente integra [axe-cli](https://github.com/dequelabs/axe-cli) para lanzar un escaneo completo con Chromium headless antes de cada análisis de URL. Esto garantiza:
+El agente integra [@axe-core/cli](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/cli) para lanzar un escaneo con Chrome headless antes de cada análisis de URL:
 
-- **Detección exhaustiva**: axe evalúa el DOM renderizado (JS + CSS ejecutados), no el HTML crudo.
-- **Zero false negatives mecánicos**: todos los issues detectables automáticamente aparecen en el primer pase.
+- **DOM renderizado**: axe evalúa el DOM con JS y CSS ejecutados, no el HTML crudo.
 - **ARIA dinámico**: aria-expanded, aria-hidden y otros atributos establecidos por JavaScript se evalúan en su estado real.
+- **Límites**: las herramientas automáticas solo detectan una parte de los fallos WCAG. Cero violaciones no implica conformidad; los resultados `incomplete` requieren revisión manual.
+
+La lógica vive en un único script, `skills/wcag-accessibility/scripts/axe-scan.mjs`, que usan tanto la herramienta `axe_scan` del CLI como los agentes que instalan la skill. Por defecto comprueba las reglas `wcag2a,wcag2aa,wcag21a,wcag21aa` (WCAG 2.1 A + AA).
 
 El agente llama a `axe_scan` primero (siempre), luego a `fetch_url` para obtener contexto HTML y producir el informe.
 
-Si `npx` no está disponible en el PATH, el agente avisa y usa `fetch_url` como fallback.
+Si `node` no está disponible, el agente avisa y usa `fetch_url` como fallback.
 
-### Verificar que axe-core CLI funciona
+### Verificar que el escaneo funciona
 
 ```bash
-npx @axe-core/cli https://example.com --tags wcag2a,wcag2aa --reporter json
+node skills/wcag-accessibility/scripts/axe-scan.mjs https://example.com
+```
+
+Si aparece un error de versión de ChromeDriver (`This version of ChromeDriver only supports Chrome version N`), instala un driver compatible con tu Chrome y exporta su ruta:
+
+```bash
+npx @puppeteer/browsers install chromedriver@<versión-mayor-de-chrome>
+export CHROMEDRIVER_PATH=/ruta/al/chromedriver
 ```
 
 ---
@@ -169,21 +193,31 @@ Tu elección: AA
 
 ```
 wcag-accessibility-agent/
-├── SKILL.md                    # Skill de accesibilidad (núcleo del agente)
+├── .claude-plugin/
+│   ├── plugin.json             # Manifiesto del plugin de Claude Code (wcag)
+│   └── marketplace.json        # Marketplace (wcag-accessibility) que apunta a este repositorio
+├── skills/
+│   └── wcag-accessibility/     # Agent Skill portable (gh skill, plugin, Claude.ai)
+│       ├── SKILL.md            # Skill de accesibilidad (núcleo del agente)
+│       ├── references/         # Base de conocimiento WCAG (fuente: W3C WAI)
+│       │   ├── ux-accesible.md
+│       │   ├── ui-accesible.md
+│       │   ├── dev-accesible.md
+│       │   ├── modos-operacion.md
+│       │   ├── criterios-wcag21.md
+│       │   └── tecnicas-fallos.md
+│       └── scripts/
+│           └── axe-scan.mjs    # Escaneo axe-core compartido por la skill y el CLI
 ├── agent.py                    # Punto de entrada — bucle agéntico principal
 ├── system_prompt.py            # Construye el system prompt desde el skill
 ├── tools.py                    # Herramientas del agente (fetch, parse, export)
 ├── exporters/
 │   ├── pdf.py                  # Exportación a PDF
 │   └── docx.py                 # Exportación a DOCX (handoff)
-├── references/                 # Base de conocimiento WCAG (fuente: W3C WAI)
-│   ├── ux-accesible.md
-│   ├── ui-accesible.md
-│   ├── dev-accesible.md
-│   ├── modos-operacion.md
-│   ├── criterios-wcag21.md
-│   └── tecnicas-fallos.md
+├── tests/                      # Validaciones locales (sin API key): make test
 ├── outputs/                    # Informes generados (no se sube a Git)
+├── wcag-accessibility.skill    # Paquete para Claude.ai (make skill-package)
+├── Makefile
 ├── requirements.txt
 ├── .env.example
 └── README.md
@@ -193,13 +227,15 @@ wcag-accessibility-agent/
 
 ## Cómo construir tu propio agente desde el skill
 
-El archivo `SKILL.md` y la carpeta `references/` son el **conocimiento portátil** de este agente. Puedes usarlos para construir tu propio agente en cualquier stack:
+La carpeta `skills/wcag-accessibility/` (`SKILL.md`, `references/` y `scripts/`) es el **conocimiento portátil** de este agente. Puedes usarla para construir tu propio agente en cualquier stack:
 
 ### Opción 1: Usar el skill en Claude.ai
 
 1. Ve a **Settings → Skills** en claude.ai
 2. Sube el archivo `wcag-accessibility.skill`
 3. Claude lo usará automáticamente cuando detecte preguntas de accesibilidad
+
+El paquete se regenera desde `skills/wcag-accessibility/` con `make skill-package` (requiere `zip`). `make test` comprueba que el paquete versionado coincide con la skill.
 
 ### Opción 2: Construir tu propio agente en Python
 
@@ -265,12 +301,20 @@ Ver `cloudflare/README.md` para instrucciones detalladas (carpeta pendiente de i
 ## Contribuir
 
 Las contribuciones son bienvenidas, especialmente:
-- Mejoras a las referencias WCAG en `references/`
+- Mejoras a las referencias WCAG en `skills/wcag-accessibility/references/`
 - Nuevos modos de operación
 - Integraciones con herramientas de diseño (Figma, Storybook)
 - Traducciones del skill a otros idiomas
 
 Por favor, abre un issue antes de hacer un PR para coordinar.
+
+### Validaciones locales
+
+```bash
+make test                       # Skill, manifiestos, paquete y carga del system prompt (sin API key)
+gh skill publish --dry-run      # Validación de la skill con GitHub CLI
+claude plugin validate .        # Validación del plugin y del marketplace
+```
 
 ---
 
